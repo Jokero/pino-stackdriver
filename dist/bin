@@ -1,0 +1,19 @@
+#! /usr/bin/env node
+'use strict';
+
+var split = require('split2');
+var Parse = require('fast-json-parse');
+var format = require('./lib/format');
+
+var isPinoLine = function isPinoLine(line) {
+  return line && line.hasOwnProperty('hostname') && line.hasOwnProperty('pid') && line.hasOwnProperty('v') && line.v === 1;
+};
+
+process.stdin.pipe(split(function (data) {
+  var parsed = new Parse(data);
+  var value = parsed.value;
+  if (parsed.err || !isPinoLine(value)) {
+    return data + '\n';
+  }
+  return JSON.stringify(format(value)) + '\n';
+})).pipe(process.stdout);
